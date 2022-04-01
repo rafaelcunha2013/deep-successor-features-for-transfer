@@ -133,6 +133,7 @@ class Agent:
         self.steps, self.reward = 0, 0.
         self.epsilon = self.epsilon_init
         self.episode_reward_hist = []
+        self.episode_mean_reward_hist = []
         
     # ===========================================================================
     # TRAINING
@@ -188,7 +189,9 @@ class Agent:
             self.episode += 1
             self.steps_since_last_episode = 0
             self.episode_reward = self.reward_since_last_episode
-            self.reward_since_last_episode = 0.   
+            self.reward_since_last_episode = 0.
+            if viewer is not None:
+                viewer.initialize()
             if self.episode > 1:
                 self.episode_reward_hist.append(self.episode_reward)  
         
@@ -200,6 +203,10 @@ class Agent:
         
         # take action a and observe reward r and next state s'
         s1, r, terminal = self.active_task.transition(a)
+        # if self.episode > 200 and viewer is not None:
+        #    viewer.update(s1[0])
+        # print(s1)
+        # print(a)
         s1_enc = self.encoding(s1)
         if terminal:
             gamma = 0.
@@ -226,8 +233,9 @@ class Agent:
             self.cum_reward_hist.append(self.cum_reward)
         
         # viewing
-        if viewer is not None and self.episode % n_view_ev == 0:
-            viewer.update()
+        if viewer is not None and self.episode % n_view_ev == 0 and self.n_tasks > 18:
+            viewer.update(s1[0])
+            # pass
         
         # printing
         if self.steps % self.print_ev == 0:

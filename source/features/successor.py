@@ -102,6 +102,8 @@ class SF:
         """
         self.n_tasks = 0
         self.psi = []
+        self.psi1 = []
+        self.psi0 = []
         self.true_w = []
         self.fit_w = []
         self.gpi_counters = []

@@ -6,8 +6,10 @@ from agents.sfql import SFQL
 from agents.ql import QL
 from features.tabular import TabularSF
 from tasks.gridworld import Shapes
+from tasks.render import Render
 from utils.config import parse_config_file
 from utils.stats import OnlineMeanVariance
+
 
 # general training params
 config_params = parse_config_file('gridworld.cfg')
@@ -30,6 +32,10 @@ ql = QL(**agent_params, **ql_params)
 agents = [sfql, ql]
 names = ['SFQL', 'QLearning']
 
+# Visualization of the environment
+my_grid = Render(maze=np.array(task_params['maze']))
+n_view_ev = 100
+
 # train
 data_task_return = [OnlineMeanVariance() for _ in agents]
 n_trials = gen_params['n_trials']
@@ -44,7 +50,7 @@ for trial in range(n_trials):
         task = generate_task()
         for agent, name in zip(agents, names):
             print('\ntrial {}, solving with {}'.format(trial, name))
-            agent.train_on_task(task, n_samples)
+            agent.train_on_task(task, n_samples, viewer=my_grid, n_view_ev=n_view_ev)
              
     # update performance statistics 
     for i, agent in enumerate(agents):
@@ -76,4 +82,4 @@ plt.ylabel('cumulative reward')
 plt.title('Cumulative Training Reward Per Task')
 plt.tight_layout()
 plt.legend(ncol=2, frameon=False)
-plt.savefig('figures/sfql_return.png')
+plt.savefig('figures/sfql_return_test1.png')

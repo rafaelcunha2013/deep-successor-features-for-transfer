@@ -69,7 +69,8 @@ class Shapes(Task):
 
     def transition(self, action): 
         (row, col), collected = self.state
-        
+        # print(self.state)
+        # print(action)
         # perform the movement
         if action == Shapes.LEFT: 
             col -= 1
