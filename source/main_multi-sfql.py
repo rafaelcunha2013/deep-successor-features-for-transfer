@@ -14,6 +14,10 @@ from tasks.gridworld_multagent import MultiagentShapes
 from tasks.render import Render
 from utils.config import parse_config_file
 from utils.stats import OnlineMeanVariance
+from utils.tools import save_file
+from utils.tools import load_file
+from utils.tools import my_plot
+from utils.tools import simple_plot
 
 # general training params
 config_params = parse_config_file('gridworld.cfg')
@@ -34,53 +38,6 @@ def generate_task(this_reward):
     # print(rewards)
     return MultiagentShapes(maze=np.array(task_params['maze-multi']), shape_rewards=rewards)
     # return MultiagentShapes(maze=np.array(task_params['maze']), shape_rewards=rewards)
-
-
-def save_file(file, name):
-    """
-    Save file
-    input: file and file_name
-    """
-    # filehandler = open(name, 'w')
-    # pickle.dump(file, filehandler)
-    with open('data/' + name, "wb") as fp:  # Pickling
-        pickle.dump(file, fp)
-
-
-def load_file(file_name):
-    with open('data/' + file_name, "rb") as fp:  # Unpickling
-        return pickle.load(fp)
-
-
-def my_plot(NAME):
-    data_task_return = load_file(NAME)
-    # plot the task return
-    ticksize = 14
-    textsize = 18
-    figsize = (20, 10)
-
-    plt.rc('font', size=textsize)  # controls default text sizes
-    plt.rc('axes', titlesize=textsize)  # fontsize of the axes title
-    plt.rc('axes', labelsize=textsize)  # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=ticksize)  # fontsize of the tick labels
-    plt.rc('ytick', labelsize=ticksize)  # fontsize of the tick labels
-    plt.rc('legend', fontsize=ticksize)  # legend fontsize
-
-    plt.figure(figsize=(12, 6))
-    ax = plt.gca()
-    for i, name in enumerate(names):
-        mean = data_task_return[i].mean
-        n_sample_per_tick = n_samples * n_tasks // mean.size
-        x = np.arange(mean.size) * n_sample_per_tick
-        se = data_task_return[i].calculate_standard_error()
-        plt.plot(x, mean, label=name)
-        ax.fill_between(x, mean - se, mean + se, alpha=0.3)
-    plt.xlabel('sample')
-    plt.ylabel('cumulative reward')
-    plt.title('Cumulative Training Reward Per Task')
-    plt.tight_layout()
-    plt.legend(ncol=2, frameon=False)
-    plt.savefig('figures/' + NAME + '.png')
  
 
 # agents
@@ -103,8 +60,8 @@ names = ['QLearning']
 
 # train
 data_task_return = [OnlineMeanVariance() for _ in agents]
-n_trials = 1  #gen_params['n_trials']
-n_samples = gen_params['n_samples']
+n_trials = 2  #gen_params['n_trials']
+n_samples = 20000  # gen_params['n_samples']
 n_tasks = 1  # gen_params['n_tasks']
 
 
@@ -127,43 +84,13 @@ for trial in range(n_trials):
         rew_hist = agent.episode_reward_hist
         mean_rew_hist = agent.episode_mean_reward_hist
 
-plt.plot(rew_hist)
-plt.plot(mean_rew_hist)
-plt.show()
-
-plt.plot(rew_hist[-1000:])
-plt.plot(mean_rew_hist[-1000:])
-plt.ylim([-1, 2])
-plt.show()
-
+my_reward_data = [rew_hist, mean_rew_hist]
 # Save parameters
 NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples)
 save_file(data_task_return, NAME)
-my_plot(NAME)
-# plot the task return
-# ticksize = 14
-# textsize = 18
-# figsize = (20, 10)
-#
-# plt.rc('font', size=textsize)  # controls default text sizes
-# plt.rc('axes', titlesize=textsize)  # fontsize of the axes title
-# plt.rc('axes', labelsize=textsize)  # fontsize of the x and y labels
-# plt.rc('xtick', labelsize=ticksize)  # fontsize of the tick labels
-# plt.rc('ytick', labelsize=ticksize)  # fontsize of the tick labels
-# plt.rc('legend', fontsize=ticksize)  # legend fontsize
-#
-# plt.figure(figsize=(12, 6))
-# ax = plt.gca()
-# for i, name in enumerate(names):
-#     mean = data_task_return[i].mean
-#     n_sample_per_tick = n_samples * n_tasks // mean.size
-#     x = np.arange(mean.size) * n_sample_per_tick
-#     se = data_task_return[i].calculate_standard_error()
-#     plt.plot(x, mean, label=name)
-#     ax.fill_between(x, mean - se, mean + se, alpha=0.3)
-# plt.xlabel('sample')
-# plt.ylabel('cumulative reward')
-# plt.title('Cumulative Training Reward Per Task')
-# plt.tight_layout()
-# plt.legend(ncol=2, frameon=False)
-# plt.savefig('figures/' + NAME + '.png')
+save_file(my_reward, NAME + 'rw_per_episode')
+my_plot(NAME, names, n_samples, n_tasks)
+simple_plot(rew_hist, mean_rew_hist, NAME, 2)
+simple_plot(rew_hist[-1000:], mean_rew_hist[-1000:], NAME + 'last1000', 3)
+
+
