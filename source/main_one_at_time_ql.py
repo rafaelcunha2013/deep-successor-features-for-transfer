@@ -45,15 +45,16 @@ def generate_task(this_reward):
 # sfql = SFQL(TabularSF(**sfql_params), **agent_params)
 # ql = QL(**agent_params, **ql_params)
 # sfql = MultiagentSFQL(multi_TabularSF(**sfql_params), **agent_params)
-ql = one_at_timeQL(**agent_params, **ql_params)
+one_ql = one_at_timeQL(**agent_params, **ql_params)
+iql = MultiagentQL(**agent_params, **ql_params)
 # agents = [sfql, ql]
 # names = ['SFQL', 'QLearning']
 # agents = [sfql]
 # names = ['SFQL']
-agents = [ql]
+agents = [iql, one_ql]
 # names = ['Single-QL']
 # names = ['QLearning']
-names = ['one_at_timeQL']
+names = ['iql', 'one_at_timeQL']
 # maze_type = 'maze-multi'
 
 # Visualization of the environment
@@ -87,18 +88,8 @@ for trial in range(n_trials):
 
 my_reward_data = [rew_hist, mean_rew_hist]
 
-# plt.plot(rew_hist)
-# plt.plot(mean_rew_hist)
-# plt.ylim([-1, 2])
-# # plt.show()
-#
-# plt.plot(rew_hist[-1000:])
-# plt.plot(mean_rew_hist[-1000:])
-# plt.ylim([-1, 2])
-# plt.show()
-
 # Save parameters
-NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples) + 'test02'
+NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples)
 save_file(data_task_return, NAME)
 save_file(my_reward, NAME + 'rw_per_episode')
 my_plot(NAME, names, n_samples, n_tasks)

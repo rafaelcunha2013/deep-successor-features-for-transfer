@@ -32,8 +32,8 @@ my_reward = [[0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [-0.5, -0.5, 0.5], [1.0, 0., 
 
 # tasks
 def generate_task(this_reward):
-    # rewards = dict(zip(['1', '2', '3'], list(np.random.uniform(low=-1.0, high=1.0, size=3))))
-    rewards = dict(zip(['1', '2', '3'], this_reward))
+    rewards = dict(zip(['1', '2', '3'], list(np.random.uniform(low=-1.0, high=1.0, size=3))))
+    # rewards = dict(zip(['1', '2', '3'], this_reward))
     # print('\n \n')
     # print(rewards)
     return MultiagentShapes(maze=np.array(task_params['maze-multi']), shape_rewards=rewards)
@@ -43,15 +43,15 @@ def generate_task(this_reward):
 # agents
 # sfql = SFQL(TabularSF(**sfql_params), **agent_params)
 # ql = QL(**agent_params, **ql_params)
-# sfql = MultiagentSFQL(multi_TabularSF(**sfql_params), **agent_params)
+sfql = MultiagentSFQL(multi_TabularSF(**sfql_params), **agent_params)
 ql = MultiagentQL(**agent_params, **ql_params)
-# agents = [sfql, ql]
-# names = ['SFQL', 'QLearning']
+agents = [sfql, ql]
+names = ['SFQL', 'QLearning']
 # agents = [sfql]
 # names = ['SFQL']
-agents = [ql]
+# agents = [ql]
 # names = ['Single-QL']
-names = ['QLearning']
+# names = ['QLearning']
 # maze_type = 'maze-multi'
 
 # Visualization of the environment
@@ -61,9 +61,10 @@ names = ['QLearning']
 # train
 data_task_return = [OnlineMeanVariance() for _ in agents]
 n_trials = 2  #gen_params['n_trials']
-n_samples = 20000  # gen_params['n_samples']
-n_tasks = 1  # gen_params['n_tasks']
+n_samples = 2000000  # gen_params['n_samples']
+n_tasks = 2  # gen_params['n_tasks']
 
+NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples)
 
 for trial in range(n_trials):
     
@@ -72,6 +73,7 @@ for trial in range(n_trials):
         agent.reset()
     for t in range(n_tasks):
         task = generate_task(my_reward[t])
+        save_file(data_task_return, NAME)
         # print(task)
         for agent, name in zip(agents, names):
             print('\ntrial {}, solving with {}'.format(trial, name))
@@ -86,7 +88,7 @@ for trial in range(n_trials):
 
 my_reward_data = [rew_hist, mean_rew_hist]
 # Save parameters
-NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples)
+# NAME = str(names) + '_' + str(my_reward[0]) + str(n_samples)
 save_file(data_task_return, NAME)
 save_file(my_reward, NAME + 'rw_per_episode')
 my_plot(NAME, names, n_samples, n_tasks)
